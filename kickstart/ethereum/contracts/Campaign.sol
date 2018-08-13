@@ -1,4 +1,4 @@
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.22;
 
 contract CampaignFactory {
     address[] public deployedCampaigns;
@@ -21,6 +21,7 @@ contract Campaign {
         bool complete;
         uint approvalCount;
         mapping(address => bool) approvals;
+        uint time;
     }
 
     Request[] public requests;
@@ -28,21 +29,26 @@ contract Campaign {
     uint public minimumContribution;
     mapping(address => bool) public approvers;
     uint public approversCount;
+    uint time;
 
     modifier restricted() {
         require(msg.sender == manager);
         _;
     }
 
-    constructor(uint minimum, address creator) public {
-        manager = creator;
+    constructor(uint minimum, address sender) public {
+        manager = sender;
         minimumContribution = minimum;
+        approversCount = 0;
+        time = now;
     }
 
     function contribute() public payable {
         require(msg.value > minimumContribution);
-        approvers[msg.sender] = true;
-        approversCount++;
+        if (!approvers[msg.sender]) {
+            approversCount++;
+            approvers[msg.sender] = true;
+        }
     }
 
     function createRequest(string description, uint value, address recipient)
@@ -53,7 +59,8 @@ contract Campaign {
                 value: value,
                 recipient: recipient,
                 complete: false,
-                approvalCount: 0
+                approvalCount: 0,
+                time: now
             });
         requests.push(newRequest);
     }
@@ -79,18 +86,19 @@ contract Campaign {
     }
 
     function getSummary() public view returns (
-        uint, uint, uint, uint, address
-    ) {
+        uint, uint, uint, uint, address, uint) {
         return (
             minimumContribution,
-            this.balance,
+            address(this).balance,
             requests.length,
             approversCount,
-            manager
+            manager,
+            time
         );
     }
 
     function getRequestsCount() public view returns (uint) {
         return requests.length;
     }
+
 }
