@@ -1,7 +1,4 @@
-Packages installation:
-npm i ganache-cli mocha solc fs-extra web3
-truffle-hdwallet-provider@0.0.3 next react react-dom
-semantic-ui-react next-routes
+A blockchain version of simple kickstarter.
 
 To compile:
 cd ethereum
